@@ -6,7 +6,7 @@ router.post("/", async (request, response) => {
     const { name, pages, typeOfPages, time } = request.body;
 
     const autoDate = new Date();
-    const fullDate = `${ autoDate.getDate() }/${ autoDate.getMonth() + 1 }`;
+    const fullDate = `${autoDate.getDate()}/${autoDate.getMonth() + 1}`;
 
     // التحقق من الحقول المطلوبة
     if (!name || !pages || !typeOfPages) {
@@ -38,43 +38,62 @@ router.post("/", async (request, response) => {
             }
 
             const pagesAlreadyExist = [];
+            const notVailed = [];
 
             for (let page of pages) {
-                const pageInt = parseInt(page, 10); 
+                const pageInt = parseInt(page, 10);
 
-                let exists;
+                if (pageInt) {
+                    let exists;
 
-                if ( typeOfPages === "جديدة" ) 
-                {
-                    exists = student.pagesOfRecitation.newPages.some( entry => entry.pages === pageInt );
+                    if (typeOfPages === "جديدة") {
+                        exists = student.pagesOfRecitation.newPages.some(entry => entry.pages === pageInt);
 
-                    if (!exists) {
-                        student.pagesOfRecitation.newPages.push( {date:time , peages:pageInt} );
+                        if (!exists) {
+                            student.pagesOfRecitation.newPages.push({ date: time, pages: pageInt });
+                        }
+                    } else if (typeOfPages === "مراجعة") {
+                        exists = student.pagesOfRecitation.oldPages.some(entry => entry.pages === pageInt);
+
+                        if (!exists) {
+                            student.pagesOfRecitation.oldPages.push({ date: time, pages: pageInt });
+                        }
                     }
-                }
 
-                else if ( typeOfPages === "مراجعة" )
-                {
-                    exists = student.pagesOfRecitation.oldPages.some(entry => entry.pages === pageInt);
-                    if ( !exists ) 
-                    {
-                        student.pagesOfRecitation.oldPages.push({date:time , peages:pageInt});
+                    if (exists) {
+                        pagesAlreadyExist.push(pageInt);
                     }
-                }
-
-                if (exists) {
-                    pagesAlreadyExist.push(pageInt);
+                } else {
+                    notVailed.push(page);
                 }
             }
 
-            student.pagesOfRecitation.total += pages.length - pagesAlreadyExist.length;
+            student.pagesOfRecitation.total += pages.length - pagesAlreadyExist.length - notVailed.length;
             await student.save();
 
-            const successMessage = pagesAlreadyExist.length > 0
-                ? `تم إضافة الصفحات بنجاح. الصفحات التالية موجودة بالفعل: ${pagesAlreadyExist.join(", ")}`
-                : "تم إضافة الصفحات بنجاح";
+            let successMessage = "";
 
-            return response.status(200).json({ message: successMessage });
+            if (pagesAlreadyExist.length === pages.length) {
+                successMessage = `الصفحات التالية موجودة بالفعل: ${pagesAlreadyExist.join(", ")}`;
+                return response.status(200).json({ message: successMessage });
+            }
+            else if ( pagesAlreadyExist.length > 0 )
+            {
+                successMessage = `تم إضافة الصفحات بنجاح. الصفحات التالية موجودة بالفعل: ${pagesAlreadyExist.join(", ")}`;
+                return response.status(200).json({ message: successMessage });
+            }
+            else if ( notVailed.length === pages.length )
+            {
+                successMessage = `يجب تنزيل أرقام الصفحات: ${notVailed.join(", ")}`;
+                return response.status(200).json({ message: successMessage });
+            }
+            else
+            {
+                successMessage = pagesAlreadyExist.length > 0 && notVailed.length > 0 ?
+                    `يجب تنزيل أرقام الصفحات: ${notVailed.join(", ")}, الصفحات التالية موجودة بالفعل: ${pagesAlreadyExist.join(", ")}, تم تنزيل الصفحات المقبولة`
+                    : `تم تنزيل الصفحات بنجاح`;
+                return response.status(200).json({ message: successMessage });
+            }
         }
         catch ( error )
         {
@@ -82,13 +101,9 @@ router.post("/", async (request, response) => {
         }
     };
 
-    try
-    {
-        await addPages( time );
-        
-    }
-    catch ( error )
-    {
+    try {
+        await addPages(time);
+    } catch (error) {
         return response.status(500).json({ message: "حدث خطأ", error: error.message });
     }
 });
