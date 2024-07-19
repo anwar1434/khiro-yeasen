@@ -50,13 +50,13 @@ router.post("/", async (request, response) => {
                         exists = student.pagesOfRecitation.newPages.some(entry => entry.pages === pageInt);
 
                         if (!exists) {
-                            student.pagesOfRecitation.newPages.push({ date: time, pages: pageInt });
+                            student.pagesOfRecitation.newPages.push({ date: time, peages: pageInt });
                         }
                     } else if (typeOfPages === "مراجعة") {
                         exists = student.pagesOfRecitation.oldPages.some(entry => entry.pages === pageInt);
 
                         if (!exists) {
-                            student.pagesOfRecitation.oldPages.push({ date: time, pages: pageInt });
+                            student.pagesOfRecitation.oldPages.push({ date: time, peages: pageInt });
                         }
                     }
 
