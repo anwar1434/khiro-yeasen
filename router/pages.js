@@ -47,13 +47,13 @@ router.post("/", async (request, response) => {
                     let exists;
 
                     if (typeOfPages === "جديدة") {
-                        exists = student.pagesOfRecitation.newPages.some(entry => entry.pages === pageInt);
+                        exists = student.pagesOfRecitation.newPages.some(entry => entry.peages === pageInt);
 
                         if (!exists) {
                             student.pagesOfRecitation.newPages.push({ date: time, peages: pageInt });
                         }
                     } else if (typeOfPages === "مراجعة") {
-                        exists = student.pagesOfRecitation.oldPages.some(entry => entry.pages === pageInt);
+                        exists = student.pagesOfRecitation.oldPages.some(entry => entry.peages === pageInt);
 
                         if (!exists) {
                             student.pagesOfRecitation.oldPages.push({ date: time, peages: pageInt });
