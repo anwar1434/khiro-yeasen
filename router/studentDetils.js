@@ -67,51 +67,53 @@ router.post( "/", async ( request, response ) =>
 } );
 
 router.put( "/:id", async ( request, response ) =>
-{
-    const { id } = request.params;
-    const {
-        name,
-        father,
-        age,
-        phoneNumber,
-        daysOfAttendance,
-        totaldaysOfAttendance,
-        daysOfabsence,
-        totaldaysOfabsence,
-        newPage, 
-        totalPages
-    } = request.body;
-
-    try
     {
-        const student = await StudentInfo.findByIdAndUpdate(
-            id,
-            {
-                name,
-                father,
-                age,
-                phoneNumber,
-                "daysOfAttendance.attendance.days": daysOfAttendance,
-                "daysOfAttendance.attendance.total": totaldaysOfAttendance,
-                "daysOfAttendance.absence.days": daysOfabsence,
-                "daysOfAttendance.absence.total": totaldaysOfabsence,
-                "pagesOfRecitation.newPages":newPage,
-                "pagesOfRecitation.total":totalPages
-            },
-            { new: true }
-        ).exec();
-
-        if ( !student )
+        const { id } = request.params;
+        const {
+            name,
+            father,
+            age,
+            phoneNumber,
+            newPage,
+            totalPages,
+            daysOfAttendance,
+            totalOfAttendanceDays,
+            daysOfAbsence,
+            totalOfAbsenceDays,
+        } = request.body;
+    
+        try
         {
-            return response.status( 404 ).json( { message: "لم يتم العثور على الطالب" } );
+            const student = await StudentInfo.findByIdAndUpdate(
+                id,
+                {
+                    name,
+                    father,
+                    age,
+                    phoneNumber,
+                    "daysOfAttendance.attendance.days": daysOfAttendance,
+                    "daysOfAttendance.attendance.total": totalOfAttendanceDays,
+                    
+                    "daysOfAttendance.absence.days": daysOfAbsence,
+                    "daysOfAttendance.absence.total": totalOfAbsenceDays,
+    
+                    "pagesOfRecitation.newPages": newPage,
+                    "pagesOfRecitation.total": totalPages
+                },
+                { new: true }
+            ).exec();
+    
+            if ( !student )
+            {
+                return response.status( 404 ).json( { message: "لم يتم العثور على الطالب" } );
+            }
+    
+            response.status( 200 ).json( { message: "تم تحديث بيانات الطالب بنجاح" } );
+        } catch ( error )
+        {
+            response.status( 500 ).json( { message: "يوجد خطأ في الاتصال، الرجاء المحاولة لاحقًا" } );
         }
-
-        response.status( 200 ).json( { message: "تم تحديث بيانات الطالب بنجاح" } );
-    } catch ( error )
-    {
-        response.status( 500 ).json( { message: "يوجد خطأ في الاتصال، الرجاء المحاولة لاحقًا" } );
-    }
-} );
+    } );
 
 router.delete( "/:id", async ( request, response ) =>
 {
