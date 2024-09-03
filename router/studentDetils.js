@@ -74,7 +74,8 @@ router.put( "/:id", async ( request, response ) =>
             father,
             age,
             phoneNumber,
-            newPage,
+            newPages,
+            oldPages,
             totalPages,
             daysOfAttendance,
             totalOfAttendanceDays,
@@ -97,7 +98,8 @@ router.put( "/:id", async ( request, response ) =>
                     "daysOfAttendance.absence.days": daysOfAbsence,
                     "daysOfAttendance.absence.total": totalOfAbsenceDays,
     
-                    "pagesOfRecitation.newPages": newPage,
+                    "pagesOfRecitation.newPages": newPages,
+                    "pagesOfRecitation.oldPages": oldPages,
                     "pagesOfRecitation.total": totalPages
                 },
                 { new: true }
