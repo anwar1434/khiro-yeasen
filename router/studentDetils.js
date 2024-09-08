@@ -7,6 +7,10 @@ router.get( "/", async ( request, response ) =>
     try
     {
         const students = await StudentInfo.find( {} );
+        students.sort( ( a, b ) =>
+        {
+            return b.pagesOfRecitation.newPages.length - a.pagesOfRecitation.newPages.length;
+        } );
         const ageList = students.map( item => item.age );
         const uniqueAges = [...new Set( ageList )];
 
@@ -67,55 +71,55 @@ router.post( "/", async ( request, response ) =>
 } );
 
 router.put( "/:id", async ( request, response ) =>
+{
+    const { id } = request.params;
+    const {
+        name,
+        father,
+        age,
+        phoneNumber,
+        newPages,
+        oldPages,
+        totalPages,
+        daysOfAttendance,
+        totalOfAttendanceDays,
+        daysOfAbsence,
+        totalOfAbsenceDays,
+    } = request.body;
+
+    try
     {
-        const { id } = request.params;
-        const {
-            name,
-            father,
-            age,
-            phoneNumber,
-            newPages,
-            oldPages,
-            totalPages,
-            daysOfAttendance,
-            totalOfAttendanceDays,
-            daysOfAbsence,
-            totalOfAbsenceDays,
-        } = request.body;
-    
-        try
-        {
-            const student = await StudentInfo.findByIdAndUpdate(
-                id,
-                {
-                    name,
-                    father,
-                    age,
-                    phoneNumber,
-                    "daysOfAttendance.attendance.days": daysOfAttendance,
-                    "daysOfAttendance.attendance.total": totalOfAttendanceDays,
-                    
-                    "daysOfAttendance.absence.days": daysOfAbsence,
-                    "daysOfAttendance.absence.total": totalOfAbsenceDays,
-    
-                    "pagesOfRecitation.newPages": newPages,
-                    "pagesOfRecitation.oldPages": oldPages,
-                    "pagesOfRecitation.total": totalPages
-                },
-                { new: true }
-            ).exec();
-    
-            if ( !student )
+        const student = await StudentInfo.findByIdAndUpdate(
+            id,
             {
-                return response.status( 404 ).json( { message: "لم يتم العثور على الطالب" } );
-            }
-    
-            response.status( 200 ).json( { message: "تم تحديث بيانات الطالب بنجاح" } );
-        } catch ( error )
+                name,
+                father,
+                age,
+                phoneNumber,
+                "daysOfAttendance.attendance.days": daysOfAttendance,
+                "daysOfAttendance.attendance.total": totalOfAttendanceDays,
+
+                "daysOfAttendance.absence.days": daysOfAbsence,
+                "daysOfAttendance.absence.total": totalOfAbsenceDays,
+
+                "pagesOfRecitation.newPages": newPages,
+                "pagesOfRecitation.oldPages": oldPages,
+                "pagesOfRecitation.total": totalPages
+            },
+            { new: true }
+        ).exec();
+
+        if ( !student )
         {
-            response.status( 500 ).json( { message: "يوجد خطأ في الاتصال، الرجاء المحاولة لاحقًا" } );
+            return response.status( 404 ).json( { message: "لم يتم العثور على الطالب" } );
         }
-    } );
+
+        response.status( 200 ).json( { message: "تم تحديث بيانات الطالب بنجاح" } );
+    } catch ( error )
+    {
+        response.status( 500 ).json( { message: "يوجد خطأ في الاتصال، الرجاء المحاولة لاحقًا" } );
+    }
+} );
 
 router.delete( "/:id", async ( request, response ) =>
 {
