@@ -13,7 +13,6 @@ router.get( "/:StatisticsType", async ( request, response ) =>
         {
             studentsStatistics = await StudentInfo.find( {} ).sort( { "daysOfAttendance.attendance.total": -1 } );
             title = "عدد أيام الحضور"
-
         }
 
         else if (StatisticsType === "احصائيات التسميع ( جديدة )") {

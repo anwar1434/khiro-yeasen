@@ -11,14 +11,8 @@ const studentSchema = new mongoose.Schema( {
     phoneNumber: { type: Number },
 
     daysOfAttendance: {
-        attendance: {
             days: [String],
             total: { type: Number, default: 0 }
-        },
-        absence: {
-            days: [String],
-            total: { type: Number, default: 0 }
-        }
     },
 
     pagesOfRecitation: {
@@ -26,6 +20,13 @@ const studentSchema = new mongoose.Schema( {
         oldPages: [],
         total: { type: Number, default: 0 }
     },
+    subjects: [
+        {
+            name: { type: String, required: true },  
+            grade: { type: Number, default: 0 }    
+        }
+    ]
+
 });
 
 const StudentInfo = mongoose.model( 'StudentInfo', studentSchema );

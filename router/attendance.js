@@ -2,85 +2,25 @@ import express from "express";
 import { StudentInfo } from "../models/student.js";
 const router = express.Router();
 
-router.post( "/", async ( request, response ) =>
+router.put( "/:id", async ( request, response ) =>
 {
-    const { students: attendanceStudents, date, studentClass: age } = request.body;
-
-    if ( !attendanceStudents || attendanceStudents.length === 0 )
-    {
-        return response.status( 400 ).json( { message: "الرجاء إضافة أسماءالحضور" } );
-    }
-    if ( !age || age === "" )
-    {
-        return response.status( 400 ).json( { message: "الرجاء تحديد الحلقة" } );
-    }
-
-    const autoDate = new Date();
-    const fullDate = `${ autoDate.getDate() }/${ autoDate.getMonth() + 1 }`;
-
-    async function add ( date ) {
-        try
-        { 
-            const allStudents = await StudentInfo.find( { age } );
-
-            const studentNames = new Set( attendanceStudents.map( student => student.name ) );
-            const allStudentNames = new Set( allStudents.map( student => student.name ) );
-
-
-            for ( const student of allStudents )
-            {
-                const isPresent = studentNames.has( student.name );
-
-                if ( !student.daysOfAttendance.attendance )
-                {
-                    student.daysOfAttendance.attendance = { days: [], total: 0 };
-                }
-                if ( !student.daysOfAttendance.absence )
-                {
-                    student.daysOfAttendance.absence = { days: [], total: 0 };
-                }
-
-                if ( isPresent ) {
-                    if ( !student.daysOfAttendance.attendance.days.includes( date ) )  {
-                        
-                        if ( student.daysOfAttendance.absence.days.includes( date ) ) {
-                            student.daysOfAttendance.absence.days = student.daysOfAttendance.absence.days.filter( day => day !== date );
-                            student.daysOfAttendance.absence.total = Math.max( 0, student.daysOfAttendance.absence.total - 1 );
-                        }
-                        student.daysOfAttendance.attendance.days.push( date );
-                        student.daysOfAttendance.attendance.total += 1;
-                    }
-                }
-                else {
-                    if ( !student.daysOfAttendance.attendance.days.includes( date ) && !student.daysOfAttendance.absence.days.includes( date ) )
-                    {
-                        student.daysOfAttendance.absence.days.push( date );
-                        student.daysOfAttendance.absence.total += 1;
-                    }
-                }
-            }
-
-            await Promise.all( allStudents.map( student => student.save() ) );
-
-            response.status( 200 ).json( {
-                message: "تم تسجيل الحضور بنجاح"
-
-            } );
-        } catch ( error )
-        {
-            response.status( 500 ).json( { message: "حدث خطأ", error: error.message } );
-        }
-    }
+    const id = request.params.id;
+    const { daysOfAttendance , numberOfDay } = request.body;
 
     try
     {
-        if ( date === "" )
+        const student = await StudentInfo.findById( id ).exec();
+
+        if ( !student )
         {
-            await add( fullDate );
-        } else
-        {
-            await add( date );
+            return response.status( 404 ).json( { message: "الطالب غير موجود" } );
         }
+
+        student.daysOfAttendance.days = daysOfAttendance;
+        
+        await student.save();
+
+        response.status( 200 ).json( { message: "تم تحديث بيانات الطالب بنجاح", student } );
     } catch ( error )
     {
         response.status( 500 ).json( { message: "حدث خطأ", error: error.message } );
@@ -96,13 +36,14 @@ router.get( '/', async ( req, res ) =>
         const result = await StudentInfo.updateMany( {}, {
             $set: {
                 "daysOfAttendance.attendance.days": [],
-                "daysOfAttendance.attendance.total" : 0 ,
-                "daysOfAttendance.absence.days" : [] ,
+                "daysOfAttendance.attendance.total": 0,
+                "daysOfAttendance.absence.days": [],
                 "daysOfAttendance.absence.total": 0,
                 "pagesOfRecitation.newPages": [],
                 "pagesOfRecitation.oldPages": [],
-                "pagesOfRecitation.total":0
-        }} );
+                "pagesOfRecitation.total": 0
+            }
+        } );
 
         res.json( { updatedCount: "تم" } );
     } catch ( error )

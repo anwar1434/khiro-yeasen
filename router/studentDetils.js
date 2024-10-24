@@ -6,15 +6,11 @@ router.get( "/", async ( request, response ) =>
 {
     try
     {
+        // استخراج جميع البيانات
         const students = await StudentInfo.find( {} );
-        students.sort( ( a, b ) =>
-        {
-            return b.pagesOfRecitation.newPages.length - a.pagesOfRecitation.newPages.length;
-        } );
-        const ageList = students.map( item => item.age );
-        const uniqueAges = [...new Set( ageList )];
 
-        response.status( 200 ).json( { data: students, classStudent: uniqueAges } );
+
+        response.status( 200 ).json( { data: students } );
     } catch ( error )
     {
         response.status( 500 ).json( { message: "يوجد خطأ في الاتصال الرجاء المحاولة لاحقا" } );
@@ -132,5 +128,6 @@ router.delete( "/:id", async ( request, response ) =>
     }
     catch ( error ) { response.status( 500 ).json( { message: "يوجد خطأ في الاتصال الرجاء محاولة لاحقا" } ) }
 } );
+
 
 export default router;
