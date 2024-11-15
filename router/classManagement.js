@@ -2,6 +2,7 @@ import express from "express";
 import { StructureClass } from "../models/structureClass.js"
 const router = express.Router();
 
+// Get all class
 router.get( "/", async ( request, response ) =>
 {
   try
@@ -14,6 +15,7 @@ router.get( "/", async ( request, response ) =>
   }
 } );
 
+// Add new class
 router.post( "/", async ( request, response ) =>
 {
   const { className, episodeProfessor, ageOfStudents } = request.body;
@@ -49,20 +51,32 @@ router.post( "/", async ( request, response ) =>
   }
 } );
 
-router.put( "/", async ( request, response ) =>
-{
+// Update class
+router.put("/", async (request, response) => {  
   const { id, className, episodeProfessor, ageOfStudents } = request.body;
-  try
-  {
-    const student = await StudentInfo.findByIdAndUpdate( id, { className, episodeProfessor, ageOfStudents }, { new: true } ).exec();
+  console.log("Received data:", { id, className, episodeProfessor, ageOfStudents });
+  
+  try {
+    const student = await StructureClass.findByIdAndUpdate(
+      id,
+      { className, episodeProfessor, ageOfStudents },
+      { new: true }
+    ).exec();
 
-    if ( !student ) { return response.status( 404 ).json( { message: "لم يتم العثور على الطالب" } ); }
+    if (!student) {
+      console.log("Student not found.");
+      return response.status(404).json({ message: "لم يتم العثور على الحلقة" });
+    }
 
-    response.status( 200 ).json( { message: "تم تحديث بيانات الحلقة بنجاح" } );
+    response.status(200).json({ message: "تم تحديث بيانات الحلقة بنجاح" });
+  } catch (error) {
+    console.error("Update error:", error);
+    response.status(500).json({ message: "يوجد خطأ في الاتصال، الرجاء المحاولة لاحقًا" });
   }
-  catch ( error ) { response.status( 500 ).json( { message: "يوجد خطأ في الاتصال، الرجاء المحاولة لاحقًا" } );   }
-} );
+});
 
+
+// Delete class
 router.delete( "/:id", async ( request, response ) =>
 {
   try

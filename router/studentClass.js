@@ -7,10 +7,7 @@ router.get( "/:studentClass", async ( request, response ) =>
     const targetAge = request.params.studentClass;
     try
     {
-        // البحث عن الطلاب حسب الفئة العمرية
         const students = await StudentInfo.find( { age: targetAge } ).sort( { name: 1 } )
-
-        // التحقق مما إذا كانت البيانات موجودة
         if ( !students || students.length === 0 )
         {
             return response.status( 404 ).json( { message: "لم يتم العثور على أي طالب في هذه الفئة العمرية" } );
